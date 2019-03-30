@@ -72,7 +72,7 @@ def calc_color(path):
   avg_color = numpy.average(avg_color_per_row, axis=0)
   return avg_color
 
-def led_color(color):
+def led_color(color, sock):
   if color in basic_colors:
     color = basic_colors[color]
   else:

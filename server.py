@@ -25,11 +25,11 @@ from led import *
 from num2words import num2words
 from yeelight import Bulb
 
-HOST_NAME = '192.168.100.12' # !!!REMEMBER TO CHANGE THIS!!!
+HOST_NAME = '192.168.100.5' # !!!REMEMBER TO CHANGE THIS!!!
 PORT_NUMBER = 8000 # Maybe set this to 9000.
 MAC_BLUETOOTH = '00:21:13:00:4F:0D'
-JALOUSIE_LINK = 'http://192.168.100.11/'
-SENSORS_LINK = 'http://192.168.100.7/'
+JALOUSIE_LINK = 'http://192.168.100.9/'
+SENSORS_LINK = 'http://192.168.100.13/'
 MIROBO_DIR = "/usr/local/bin/mirobo"
 MIROBO_IP = u"192.168.100.10"
 MIROBO_TOKEN = u"44655143634549325949375847366841"
@@ -150,7 +150,7 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
         if token_exist(data["request"]["nlu"]["tokens"], u"цвет"):
           color = data["request"]["command"].replace(u" цвет","").encode('utf-8')
-          led_color(color)
+          led_color(color, sock)
           res["response"] = pos_response()
 
         s.send_response(200)
