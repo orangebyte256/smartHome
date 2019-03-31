@@ -34,13 +34,22 @@ MIROBO_DIR = "/usr/local/bin/mirobo"
 MIROBO_IP = u"192.168.100.10"
 MIROBO_TOKEN = u"44655143634549325949375847366841"
 SWITCH_BIN = "/home/pi/source/smartHome/switch/index.js"
-MAX_LOUD = 100
 BULB_IP = '192.168.100.6'
+CERT_PATH = "/home/pi/source/smartHome/server.pem"
 
 random.seed()
 
-sock=bluetooth.BluetoothSocket(bluetooth.RFCOMM)
-sock.connect((MAC_BLUETOOTH, 1))
+def connect():
+  while True:
+    try:
+      time.sleep(0.5)
+      print 'Attempting Connection...'
+      sock=bluetooth.BluetoothSocket(bluetooth.RFCOMM)
+      sock.connect((MAC_BLUETOOTH, 1))
+    except bluetooth.btcommon.BluetoothError:
+      continue
+    return sock
+
 
 def get_sensors():
   vals = urllib2.urlopen(SENSORS_LINK).read()
@@ -60,14 +69,15 @@ my_env["LC_ALL"] = "C.UTF-8"
 my_env["LANG"] = "C.UTF-8"
 equalize_thread = {}
 capture_thread = {}
+bluetooth_sock = {}
 bulb = Bulb(BULB_IP)
 
 class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
-    def do_HEAD(s):
+    def do_HEAD(self, s):
         s.send_response(200)
         s.send_header("Content-type", "text/html")
         s.end_headers()
-    def do_GET(s):
+    def do_GET(self, s):
         """Respond to a GET request."""
         s.send_response(200)
         s.send_header("Content-type", "text/html")
@@ -76,7 +86,7 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         s.wfile.write("<body><p>This is a test.</p>")
         s.wfile.write("<p>You accessed path: %s</p>" % s.path)
         s.wfile.write("</body></html>")
-    def do_POST(s):
+    def do_POST(self, s):
       content_len = int(s.headers.getheader('content-length', 0))
       post_body = s.rfile.read(content_len)
       if post_body:
@@ -108,7 +118,7 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
           if is_on(data["request"]["nlu"]["tokens"]) or is_off(data["request"]["nlu"]["tokens"]):
             if is_on(data["request"]["nlu"]["tokens"]):
               global equalize_thread
-              equalize_thread = Process(target=equalizer, args=(sock,))
+              equalize_thread = Process(target=equalizer, args=(bluetooth_sock,))
               equalize_thread.start()
             else:
               equalize_thread.terminate()
@@ -120,7 +130,7 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
           if is_on(data["request"]["nlu"]["tokens"]) or is_off(data["request"]["nlu"]["tokens"]):
             if is_on(data["request"]["nlu"]["tokens"]):
               global capture_thread
-              capture_thread = Process(target=capture, args=(sock,))
+              capture_thread = Process(target=capture, args=(bluetooth_sock,))
               capture_thread.start()
             else:
               capture_thread.terminate()
@@ -150,7 +160,7 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
         if token_exist(data["request"]["nlu"]["tokens"], u"цвет"):
           color = data["request"]["command"].replace(u" цвет","").encode('utf-8')
-          led_color(color, sock)
+          led_color(color, bluetooth_sock)
           res["response"] = pos_response()
 
         s.send_response(200)
@@ -160,8 +170,10 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
 if __name__ == '__main__':
     server_class = BaseHTTPServer.HTTPServer
-    httpd = server_class((HOST_NAME, PORT_NUMBER), MyHandler)
-    httpd.socket = ssl.wrap_socket (httpd.socket, certfile='/home/pi/source/smartHome/server.pem', server_side=True)
+    global bluetooth_sock
+    bluetooth_sock = connect()
+    httpd = server_class((HOST_NAME, PORT_NUMBER), handler)
+    httpd.socket = ssl.wrap_socket (httpd.socket, certfile=CERT_PATH, server_side=True)
     print time.asctime(), "Server Starts - %s:%s" % (HOST_NAME, PORT_NUMBER)
     try:
         httpd.serve_forever()
