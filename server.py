@@ -127,7 +127,7 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             else:
               res["response"] = neg_response()
 
-          if token_exist(data["request"]["nlu"]["tokens"], u"экран"):
+          if token_exist(data["request"]["nlu"]["tokens"], u"захват") and token_exist(data["request"]["nlu"]["tokens"], u"экрана"):
             if is_on(data["request"]["nlu"]["tokens"]) or is_off(data["request"]["nlu"]["tokens"]):
               if is_on(data["request"]["nlu"]["tokens"]):
                 global capture_thread
@@ -161,7 +161,10 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
           if token_exist(data["request"]["nlu"]["tokens"], u"цвет"):
             color = data["request"]["command"].replace(u" цвет","").encode('utf-8')
-            led_color(color, bluetooth_sock)
+            if token_exist(data["request"]["nlu"]["tokens"], u"цвет"):
+              led_color(color, bluetooth_sock)
+            else:
+              set_bulb_color(color, bulb)
             res["response"] = pos_response()
 
           s.send_response(200)

@@ -37,11 +37,15 @@ basic_colors = {
   'черный': [254, 254, 254],
 }
 
-def set_bulb_color(bulb, color):
+def set_bulb_color(color, bulb):
   if(color == [0, 0, 0]):
     bulb.turn_off()
   else:
     bulb.turn_on()
+    if color in basic_colors:
+      color = basic_colors[color]
+    else:
+      color = process(calc_color(load(color)))
     bulb.set_rgb(*color)
 
 def load(name):
