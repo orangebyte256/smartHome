@@ -161,7 +161,7 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 if __name__ == '__main__':
     server_class = BaseHTTPServer.HTTPServer
     httpd = server_class((HOST_NAME, PORT_NUMBER), MyHandler)
-    httpd.socket = ssl.wrap_socket (httpd.socket, certfile='./server.pem', server_side=True)
+    httpd.socket = ssl.wrap_socket (httpd.socket, certfile='/home/pi/source/smartHome/server.pem', server_side=True)
     print time.asctime(), "Server Starts - %s:%s" % (HOST_NAME, PORT_NUMBER)
     try:
         httpd.serve_forever()
