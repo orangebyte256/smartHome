@@ -73,11 +73,11 @@ bluetooth_sock = {}
 bulb = Bulb(BULB_IP)
 
 class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
-    def do_HEAD(self, s):
+    def do_HEAD(s):
         s.send_response(200)
         s.send_header("Content-type", "text/html")
         s.end_headers()
-    def do_GET(self, s):
+    def do_GET(s):
         """Respond to a GET request."""
         s.send_response(200)
         s.send_header("Content-type", "text/html")
@@ -86,93 +86,94 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         s.wfile.write("<body><p>This is a test.</p>")
         s.wfile.write("<p>You accessed path: %s</p>" % s.path)
         s.wfile.write("</body></html>")
-    def do_POST(self, s):
+    def do_POST(s):
       content_len = int(s.headers.getheader('content-length', 0))
       post_body = s.rfile.read(content_len)
       if post_body:
-        data = json.loads(post_body)
-        res = dict()
-        res["version"] = data["version"]
-        res["session"] = data["session"]
-        res["response"] = {}
-        res["response"]["text"] = "Я Мистер Мисикс! Посмотрите на меня!"
-        res["response"]["tts"] = "<speaker effect=\"hamster\">Я Мистер Мисикс! Посмотрите на меня!"
-        res["response"]["end_session"] = False
-        if token_exist(data["request"]["nlu"]["tokens"], u"пылесос"):
-          if is_on(data["request"]["nlu"]["tokens"]) or is_off(data["request"]["nlu"]["tokens"]):
-            if is_on(data["request"]["nlu"]["tokens"]):
-              subprocess.Popen([MIROBO_DIR, "start"], env=my_env)
+        try:
+          data = json.loads(post_body)
+          res = dict()
+          res["version"] = data["version"]
+          res["session"] = data["session"]
+          res["response"] = {}
+          res["response"]["text"] = "Я Мистер Мисикс! Посмотрите на меня!"
+          res["response"]["tts"] = "<speaker effect=\"hamster\">Я Мистер Мисикс! Посмотрите на меня!"
+          res["response"]["end_session"] = False
+          if token_exist(data["request"]["nlu"]["tokens"], u"пылесос"):
+            if is_on(data["request"]["nlu"]["tokens"]) or is_off(data["request"]["nlu"]["tokens"]):
+              if is_on(data["request"]["nlu"]["tokens"]):
+                subprocess.Popen([MIROBO_DIR, "start"], env=my_env)
+              else:
+                subprocess.Popen([MIROBO_DIR, "home"], env=my_env)
+              res["response"] = pos_response()
             else:
-              subprocess.Popen([MIROBO_DIR, "home"], env=my_env)
-            res["response"] = pos_response()
-          else:
-            res["response"] = neg_response()
+              res["response"] = neg_response()
 
-        if token_exist(data["request"]["nlu"]["tokens"], u"температура"):
-            res["response"] = custom_responce("Текущая температура " + get_sensors()[0].encode('utf-8') + " градусов")
+          if token_exist(data["request"]["nlu"]["tokens"], u"температура"):
+              res["response"] = custom_responce("Текущая температура " + get_sensors()[0].encode('utf-8') + " градусов")
 
-        if token_exist(data["request"]["nlu"]["tokens"], u"влажность"):
-            res["response"] = custom_responce("Текущая влажность " + get_sensors()[1].encode('utf-8') + " процентов")
+          if token_exist(data["request"]["nlu"]["tokens"], u"влажность"):
+              res["response"] = custom_responce("Текущая влажность " + get_sensors()[1].encode('utf-8') + " процентов")
 
-        if token_exist(data["request"]["nlu"]["tokens"], u"эквалайзер"):
-          if is_on(data["request"]["nlu"]["tokens"]) or is_off(data["request"]["nlu"]["tokens"]):
-            if is_on(data["request"]["nlu"]["tokens"]):
-              global equalize_thread
-              equalize_thread = Process(target=equalizer, args=(bluetooth_sock,))
-              equalize_thread.start()
+          if token_exist(data["request"]["nlu"]["tokens"], u"эквалайзер"):
+            if is_on(data["request"]["nlu"]["tokens"]) or is_off(data["request"]["nlu"]["tokens"]):
+              if is_on(data["request"]["nlu"]["tokens"]):
+                global equalize_thread
+                equalize_thread = Process(target=equalizer, args=(bluetooth_sock,))
+                equalize_thread.start()
+              else:
+                equalize_thread.terminate()
+              res["response"] = pos_response()
             else:
-              equalize_thread.terminate()
-            res["response"] = pos_response()
-          else:
-            res["response"] = neg_response()
+              res["response"] = neg_response()
 
-        if token_exist(data["request"]["nlu"]["tokens"], u"экран"):
-          if is_on(data["request"]["nlu"]["tokens"]) or is_off(data["request"]["nlu"]["tokens"]):
-            if is_on(data["request"]["nlu"]["tokens"]):
-              global capture_thread
-              capture_thread = Process(target=capture, args=(bluetooth_sock,))
-              capture_thread.start()
+          if token_exist(data["request"]["nlu"]["tokens"], u"экран"):
+            if is_on(data["request"]["nlu"]["tokens"]) or is_off(data["request"]["nlu"]["tokens"]):
+              if is_on(data["request"]["nlu"]["tokens"]):
+                global capture_thread
+                capture_thread = Process(target=capture, args=(bluetooth_sock,))
+                capture_thread.start()
+              else:
+                capture_thread.terminate()
+              res["response"] = pos_response()
             else:
-              capture_thread.terminate()
-            res["response"] = pos_response()
-          else:
-            res["response"] = neg_response()
+              res["response"] = neg_response()
 
-        if token_exist(data["request"]["nlu"]["tokens"], u"свет"):
-          if is_on(data["request"]["nlu"]["tokens"]) or is_off(data["request"]["nlu"]["tokens"]):
-            if is_on(data["request"]["nlu"]["tokens"]):
-              subprocess.Popen(["node", SWITCH_BIN, "true"])
+          if token_exist(data["request"]["nlu"]["tokens"], u"свет"):
+            if is_on(data["request"]["nlu"]["tokens"]) or is_off(data["request"]["nlu"]["tokens"]):
+              if is_on(data["request"]["nlu"]["tokens"]):
+                subprocess.Popen(["node", SWITCH_BIN, "true"])
+              else:
+                subprocess.Popen(["node", SWITCH_BIN, "false"])
+              res["response"] = pos_response()
             else:
-              subprocess.Popen(["node", SWITCH_BIN, "false"])
-            res["response"] = pos_response()
-          else:
-            res["response"] = neg_response()
+              res["response"] = neg_response()
 
-        if token_exist(data["request"]["nlu"]["tokens"], u"шторы") or token_exist(data["request"]["nlu"]["tokens"], u"окно"):
-          if token_partly_exist(data["request"]["nlu"]["tokens"], u"откр") or token_partly_exist(data["request"]["nlu"]["tokens"], u"закр"):
-            if token_partly_exist(data["request"]["nlu"]["tokens"], u"откр"):
-              urllib2.urlopen(JALOUSIE_LINK + "open").read()
+          if token_exist(data["request"]["nlu"]["tokens"], u"шторы") or token_exist(data["request"]["nlu"]["tokens"], u"окно"):
+            if token_partly_exist(data["request"]["nlu"]["tokens"], u"откр") or token_partly_exist(data["request"]["nlu"]["tokens"], u"закр"):
+              if token_partly_exist(data["request"]["nlu"]["tokens"], u"откр"):
+                urllib2.urlopen(JALOUSIE_LINK + "open").read()
+              else:
+                urllib2.urlopen(JALOUSIE_LINK + "close").read()
+              res["response"] = pos_response()
             else:
-              urllib2.urlopen(JALOUSIE_LINK + "close").read()
+              res["response"] = neg_response()
+
+          if token_exist(data["request"]["nlu"]["tokens"], u"цвет"):
+            color = data["request"]["command"].replace(u" цвет","").encode('utf-8')
+            led_color(color, bluetooth_sock)
             res["response"] = pos_response()
-          else:
-            res["response"] = neg_response()
 
-        if token_exist(data["request"]["nlu"]["tokens"], u"цвет"):
-          color = data["request"]["command"].replace(u" цвет","").encode('utf-8')
-          led_color(color, bluetooth_sock)
-          res["response"] = pos_response()
-
-        s.send_response(200)
-        s.send_header("Content-type", "application/json; charset=utf-8")
-        s.end_headers()
-        s.wfile.write(json.dumps(res))
+          s.send_response(200)
+          s.send_header("Content-type", "application/json; charset=utf-8")
+          s.end_headers()
+          s.wfile.write(json.dumps(res))
 
 if __name__ == '__main__':
     server_class = BaseHTTPServer.HTTPServer
     global bluetooth_sock
     bluetooth_sock = connect()
-    httpd = server_class((HOST_NAME, PORT_NUMBER), handler)
+    httpd = server_class((HOST_NAME, PORT_NUMBER), MyHandler)
     httpd.socket = ssl.wrap_socket (httpd.socket, certfile=CERT_PATH, server_side=True)
     print time.asctime(), "Server Starts - %s:%s" % (HOST_NAME, PORT_NUMBER)
     try:
