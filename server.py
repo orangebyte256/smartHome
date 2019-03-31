@@ -161,10 +161,10 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
           if token_exist(data["request"]["nlu"]["tokens"], u"цвет"):
             color = data["request"]["command"].replace(u" цвет","").encode('utf-8')
-            if token_exist(data["request"]["nlu"]["tokens"], u"цвет"):
-              led_color(color, bluetooth_sock)
-            else:
+            if token_exist(data["request"]["nlu"]["tokens"], u"кори"):
               set_bulb_color(color, bulb)
+            else:
+              led_color(color, bluetooth_sock)
             res["response"] = pos_response()
 
           s.send_response(200)
