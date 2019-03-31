@@ -46,7 +46,7 @@ def set_bulb_color(color, bulb):
       color = basic_colors[color]
     else:
       color = process(calc_color(load(color)))
-    bulb.set_rgb(*color)
+    bulb.set_rgb(*[int(x) for x in color])
 
 def load(name):
   response = google_images_download.googleimagesdownload()   #class instantiation
