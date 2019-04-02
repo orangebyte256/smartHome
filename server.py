@@ -12,7 +12,6 @@ import sys
 import random
 import serial
 import requests
-import subprocess
 import subprocess, os
 import urllib2
 import alsaaudio, audioop
@@ -22,6 +21,7 @@ from google_images_download import google_images_download   #importing the libra
 from multiprocessing import Process
 from lex_token import * 
 from led import * 
+from devices import * 
 from num2words import num2words
 from yeelight import Bulb
 
@@ -36,6 +36,9 @@ MIROBO_TOKEN = u"44655143634549325949375847366841"
 SWITCH_BIN = "/home/pi/source/smartHome/switch/index.js"
 BULB_IP = '192.168.100.6'
 CERT_PATH = "/home/pi/source/smartHome/server.pem"
+SWITCH_IP = '192.168.100.2'
+SWITCH_ID = '002005075ccf7fda8518'
+SWITCH_KEY = 'ae9296defbabcc83'
 
 random.seed()
 
@@ -62,11 +65,6 @@ def get_sensors():
   return res
 
 
-my_env = os.environ.copy()
-my_env["MIROBO_IP"] = MIROBO_IP
-my_env["MIROBO_TOKEN"] = MIROBO_TOKEN
-my_env["LC_ALL"] = "C.UTF-8"
-my_env["LANG"] = "C.UTF-8"
 equalize_thread = {}
 capture_thread = {}
 bluetooth_sock = {}
@@ -102,9 +100,11 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
           if token_exist(data["request"]["nlu"]["tokens"], u"пылесос"):
             if is_on(data["request"]["nlu"]["tokens"]) or is_off(data["request"]["nlu"]["tokens"]):
               if is_on(data["request"]["nlu"]["tokens"]):
-                subprocess.Popen([MIROBO_DIR, "start"], env=my_env)
-              else:
-                subprocess.Popen([MIROBO_DIR, "home"], env=my_env)
+                cleaner_command(MIROBO_IP, MIROBO_TOKEN, MIROBO_DIR, "start")
+              if token_exist(data["request"]["nlu"]["tokens"], u"пауза"):
+                cleaner_command(MIROBO_IP, MIROBO_TOKEN, MIROBO_DIR, "pause")
+              if is_off(data["request"]["nlu"]["tokens"]):
+                cleaner_command(MIROBO_IP, MIROBO_TOKEN, MIROBO_DIR, "home")
               res["response"] = pos_response()
             else:
               res["response"] = neg_response()
@@ -142,9 +142,9 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
           if token_exist(data["request"]["nlu"]["tokens"], u"свет"):
             if is_on(data["request"]["nlu"]["tokens"]) or is_off(data["request"]["nlu"]["tokens"]):
               if is_on(data["request"]["nlu"]["tokens"]):
-                subprocess.Popen(["node", SWITCH_BIN, "true"])
+                set_switch(SWITCH_IP, SWITCH_ID, SWITCH_KEY, True)
               else:
-                subprocess.Popen(["node", SWITCH_BIN, "false"])
+                set_switch(SWITCH_IP, SWITCH_ID, SWITCH_KEY, False)
               res["response"] = pos_response()
             else:
               res["response"] = neg_response()
