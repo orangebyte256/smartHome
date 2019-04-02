@@ -178,15 +178,19 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
           print 'Decoding JSON has failed'
 
 if __name__ == '__main__':
-  server_class = BaseHTTPServer.HTTPServer
-  global bluetooth_sock
-  bluetooth_sock = connect()
-  httpd = server_class((HOST_NAME, PORT_NUMBER), MyHandler)
-  httpd.socket = ssl.wrap_socket (httpd.socket, certfile=CERT_PATH, server_side=True)
-  print time.asctime(), "Server Starts - %s:%s" % (HOST_NAME, PORT_NUMBER)
-  try:
-      httpd.serve_forever()
-  except KeyboardInterrupt:
-      pass
-  httpd.server_close()
-  print time.asctime(), "Server Stops - %s:%s" % (HOST_NAME, PORT_NUMBER)
+  while True:
+    try:
+      server_class = BaseHTTPServer.HTTPServer
+      global bluetooth_sock
+      bluetooth_sock = connect()
+      httpd = server_class((HOST_NAME, PORT_NUMBER), MyHandler)
+      httpd.socket = ssl.wrap_socket (httpd.socket, certfile=CERT_PATH, server_side=True)
+      print time.asctime(), "Server Starts - %s:%s" % (HOST_NAME, PORT_NUMBER)
+      try:
+          httpd.serve_forever()
+      except KeyboardInterrupt:
+          pass
+      httpd.server_close()
+      print time.asctime(), "Server Stops - %s:%s" % (HOST_NAME, PORT_NUMBER)
+    except:
+      print "Fail"
