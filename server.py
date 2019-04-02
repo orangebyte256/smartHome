@@ -97,17 +97,18 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
           res["response"]["text"] = "Я Мистер Мисикс! Посмотрите на меня!"
           res["response"]["tts"] = "<speaker effect=\"hamster\">Я Мистер Мисикс! Посмотрите на меня!"
           res["response"]["end_session"] = False
+          
           if token_exist(data["request"]["nlu"]["tokens"], u"пылесос"):
-            if is_on(data["request"]["nlu"]["tokens"]) or is_off(data["request"]["nlu"]["tokens"]):
-              if is_on(data["request"]["nlu"]["tokens"]):
-                cleaner_command(MIROBO_IP, MIROBO_TOKEN, MIROBO_DIR, "start")
-              if token_exist(data["request"]["nlu"]["tokens"], u"пауза"):
-                cleaner_command(MIROBO_IP, MIROBO_TOKEN, MIROBO_DIR, "pause")
-              if is_off(data["request"]["nlu"]["tokens"]):
-                cleaner_command(MIROBO_IP, MIROBO_TOKEN, MIROBO_DIR, "home")
+            res["response"] = neg_response()
+            if is_on(data["request"]["nlu"]["tokens"]):
+              cleaner_command(MIROBO_IP, MIROBO_TOKEN, MIROBO_DIR, "start")
               res["response"] = pos_response()
-            else:
-              res["response"] = neg_response()
+            if token_exist(data["request"]["nlu"]["tokens"], u"пауза"):
+              cleaner_command(MIROBO_IP, MIROBO_TOKEN, MIROBO_DIR, "pause")
+              res["response"] = pos_response()
+            if is_off(data["request"]["nlu"]["tokens"]):
+              cleaner_command(MIROBO_IP, MIROBO_TOKEN, MIROBO_DIR, "home")
+              res["response"] = pos_response()
 
           if token_exist(data["request"]["nlu"]["tokens"], u"температура"):
               res["response"] = custom_responce("Текущая температура " + get_sensors()[0].encode('utf-8') + " градусов")
