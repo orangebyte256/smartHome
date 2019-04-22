@@ -138,19 +138,3 @@ def equalizer(sock):
         _res = map(operator.add, _res, _offset)
         _stage = _stage - 1
         send(_res, sock)
-
-def capture(sock):
-  last = [0,0,0]
-  while True:
-    w = gtk.gdk.get_default_root_window()
-    sz = w.get_size()
-    pb = gtk.gdk.Pixbuf(gtk.gdk.COLORSPACE_RGB,False,8,sz[0],sz[1])
-    pb = pb.get_from_drawable(w,w.get_colormap(),0,0,0,0,sz[0],sz[1])
-    array = pb.get_pixels_array()
-    avg_color_per_row = numpy.average(array, axis=0)
-    avg_color = numpy.average(avg_color_per_row, axis=0)
-    color = process(avg_color)
-    if(color != last):
-      time.sleep(0.025)
-      send(color, sock)
-      last = color

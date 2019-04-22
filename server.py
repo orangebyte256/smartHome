@@ -15,8 +15,9 @@ import requests
 import subprocess, os
 import urllib2
 import alsaaudio, audioop
-from pathlib import Path
 import bluetooth
+from defines import *
+from pathlib import Path
 from google_images_download import google_images_download   #importing the library
 from multiprocessing import Process
 from lex_token import * 
@@ -25,34 +26,7 @@ from devices import *
 from num2words import num2words
 from yeelight import Bulb
 
-HOST_NAME = '192.168.100.5' # !!!REMEMBER TO CHANGE THIS!!!
-PORT_NUMBER = 8000 # Maybe set this to 9000.
-MAC_BLUETOOTH = '00:21:13:00:4F:0D'
-JALOUSIE_LINK = 'http://192.168.100.9/'
-SENSORS_LINK = 'http://192.168.100.13/'
-MIROBO_DIR = "/usr/local/bin/mirobo"
-MIROBO_IP = u"192.168.100.10"
-MIROBO_TOKEN = u"44655143634549325949375847366841"
-SWITCH_BIN = "/home/pi/source/smartHome/switch/index.js"
-BULB_IP = '192.168.100.6'
-CERT_PATH = "/home/pi/source/smartHome/server.pem"
-SWITCH_IP = '192.168.100.2'
-SWITCH_ID = '002005075ccf7fda8518'
-SWITCH_KEY = 'ae9296defbabcc83'
-
 random.seed()
-
-def connect():
-  while True:
-    try:
-      time.sleep(0.5)
-      print 'Attempting Connection...'
-      sock=bluetooth.BluetoothSocket(bluetooth.RFCOMM)
-      sock.connect((MAC_BLUETOOTH, 1))
-    except bluetooth.btcommon.BluetoothError:
-      continue
-    return sock
-
 
 def get_sensors():
   vals = urllib2.urlopen(SENSORS_LINK).read()
@@ -128,17 +102,17 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             else:
               res["response"] = neg_response()
 
-          if token_exist(data["request"]["nlu"]["tokens"], u"захват") and token_exist(data["request"]["nlu"]["tokens"], u"экрана"):
-            if is_on(data["request"]["nlu"]["tokens"]) or is_off(data["request"]["nlu"]["tokens"]):
-              if is_on(data["request"]["nlu"]["tokens"]):
-                global capture_thread
-                capture_thread = Process(target=capture, args=(bluetooth_sock,))
-                capture_thread.start()
-              else:
-                capture_thread.terminate()
-              res["response"] = pos_response()
-            else:
-              res["response"] = neg_response()
+          if token_exist(data["request"]["nlu"]["tokens"], u"кино"):
+            set_bulb_color(u"синий", bulb)
+            led_color(u"черный", bluetooth_sock)
+            set_switch(SWITCH_IP, SWITCH_ID, SWITCH_KEY, False)
+            res["response"] = pos_response()
+
+          if token_exist(data["request"]["nlu"]["tokens"], u"спать"):
+            set_bulb_color(u"черный", bulb)
+            led_color(u"черный", bluetooth_sock)
+            set_switch(SWITCH_IP, SWITCH_ID, SWITCH_KEY, False)
+            res["response"] = pos_response()
 
           if token_exist(data["request"]["nlu"]["tokens"], u"свет"):
             if is_on(data["request"]["nlu"]["tokens"]) or is_off(data["request"]["nlu"]["tokens"]):
@@ -183,7 +157,7 @@ if __name__ == '__main__':
     try:
       server_class = BaseHTTPServer.HTTPServer
       global bluetooth_sock
-      bluetooth_sock = connect()
+      bluetooth_sock = connect(MAC_BLUETOOTH)
       httpd = server_class((HOST_NAME, PORT_NUMBER), MyHandler)
       httpd.socket = ssl.wrap_socket (httpd.socket, certfile=CERT_PATH, server_side=True)
       print time.asctime(), "Server Starts - %s:%s" % (HOST_NAME, PORT_NUMBER)

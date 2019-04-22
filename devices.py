@@ -1,5 +1,7 @@
 import pytuya
 import subprocess, os
+import time
+import bluetooth
 
 def set_switch(ip, id, key, state):
     d = pytuya.OutletDevice(id, ip, key)
@@ -12,3 +14,13 @@ def cleaner_command(ip, token, dir, command):
     my_env["LC_ALL"] = "C.UTF-8"
     my_env["LANG"] = "C.UTF-8"
     subprocess.Popen([dir, command], env=my_env)
+
+def connect(mac):
+  while True:
+    try:
+      time.sleep(0.5)
+      sock = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
+      sock.connect((mac, 1))
+    except bluetooth.btcommon.BluetoothError:
+      continue
+    return sock
