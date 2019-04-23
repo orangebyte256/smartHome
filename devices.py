@@ -5,7 +5,8 @@ import bluetooth
 
 def set_switch(ip, id, key, state):
     d = pytuya.OutletDevice(id, ip, key)
-    d.set_status(state)
+    while d.status()['dps']['1'] != state:
+        d.set_status(state)
 
 def cleaner_command(ip, token, dir, command):
     my_env = os.environ.copy()

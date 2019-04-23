@@ -63,6 +63,7 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       post_body = s.rfile.read(content_len)
       if post_body:
         try:
+          print post_body
           data = json.loads(post_body)
           res = dict()
           res["version"] = data["version"]
@@ -103,14 +104,14 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
               res["response"] = neg_response()
 
           if token_exist(data["request"]["nlu"]["tokens"], u"кино"):
-            set_bulb_color(u"синий", bulb)
-            led_color(u"черный", bluetooth_sock)
+            set_bulb_color("синий", bulb)
+            led_color("черный", bluetooth_sock)
             set_switch(SWITCH_IP, SWITCH_ID, SWITCH_KEY, False)
             res["response"] = pos_response()
 
           if token_exist(data["request"]["nlu"]["tokens"], u"спать"):
-            set_bulb_color(u"черный", bulb)
-            led_color(u"черный", bluetooth_sock)
+            set_bulb_color("черный", bulb)
+            led_color("черный", bluetooth_sock)
             set_switch(SWITCH_IP, SWITCH_ID, SWITCH_KEY, False)
             res["response"] = pos_response()
 
