@@ -2,6 +2,8 @@ import pytuya
 import subprocess, os
 import time
 import bluetooth
+import urllib2
+from num2words import num2words
 
 def set_switch(ip, id, key, state):
     d = pytuya.OutletDevice(id, ip, key)
@@ -16,12 +18,12 @@ def cleaner_command(ip, token, dir, command):
     my_env["LANG"] = "C.UTF-8"
     subprocess.Popen([dir, command], env=my_env)
 
-def connect(mac):
-  while True:
-    try:
-      time.sleep(0.5)
-      sock = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
-      sock.connect((mac, 1))
-    except bluetooth.btcommon.BluetoothError:
-      continue
-    return sock
+def get_sensors(SENSORS_LINK):
+  vals = urllib2.urlopen(SENSORS_LINK).read()
+  vals = vals.split('/')
+  res = []
+  for val in vals:
+    val = val.split('.')
+    print val[0]
+    res.append(num2words(val[0], lang='ru'))
+  return res

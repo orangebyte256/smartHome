@@ -14,7 +14,6 @@ import serial
 import requests
 import subprocess, os
 import urllib2
-import alsaaudio, audioop
 import bluetooth
 from defines import *
 from pathlib import Path
@@ -27,17 +26,6 @@ from num2words import num2words
 from yeelight import Bulb
 
 random.seed()
-
-def get_sensors():
-  vals = urllib2.urlopen(SENSORS_LINK).read()
-  vals = vals.split('/')
-  res = []
-  for val in vals:
-    val = val.split('.')
-    print val[0]
-    res.append(num2words(val[0], lang='ru'))
-  return res
-
 
 equalize_thread = {}
 capture_thread = {}
@@ -95,7 +83,7 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             if is_on(data["request"]["nlu"]["tokens"]) or is_off(data["request"]["nlu"]["tokens"]):
               if is_on(data["request"]["nlu"]["tokens"]):
                 global equalize_thread
-                equalize_thread = Process(target=equalizer, args=(bluetooth_sock,))
+                equalize_thread = Process(target=equalizer, args=(LED_LINK,))
                 equalize_thread.start()
               else:
                 equalize_thread.terminate()
@@ -105,13 +93,13 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
           if token_exist(data["request"]["nlu"]["tokens"], u"кино"):
             set_bulb_color("синий", bulb)
-            led_color("черный", bluetooth_sock)
+            led_color("черный", LED_LINK)
             set_switch(SWITCH_IP, SWITCH_ID, SWITCH_KEY, False)
             res["response"] = pos_response()
 
           if token_exist(data["request"]["nlu"]["tokens"], u"спать"):
             set_bulb_color("черный", bulb)
-            led_color("черный", bluetooth_sock)
+            led_color("черный", LED_LINK)
             set_switch(SWITCH_IP, SWITCH_ID, SWITCH_KEY, False)
             res["response"] = pos_response()
 
@@ -143,7 +131,7 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
               color = color.replace(u" коридоре","").encode('utf-8')
               set_bulb_color(color, bulb)
             else:
-              led_color(color, bluetooth_sock)
+              led_color(color, LED_LINK)
             res["response"] = pos_response()
 
           s.send_response(200)
@@ -154,19 +142,10 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
           print 'Decoding JSON has failed'
 
 if __name__ == '__main__':
-  while True:
-    try:
-      server_class = BaseHTTPServer.HTTPServer
-      global bluetooth_sock
-      bluetooth_sock = connect(MAC_BLUETOOTH)
-      httpd = server_class((HOST_NAME, PORT_NUMBER), MyHandler)
-      httpd.socket = ssl.wrap_socket (httpd.socket, certfile=CERT_PATH, server_side=True)
-      print time.asctime(), "Server Starts - %s:%s" % (HOST_NAME, PORT_NUMBER)
-      try:
-          httpd.serve_forever()
-      except KeyboardInterrupt:
-          pass
-      httpd.server_close()
-      print time.asctime(), "Server Stops - %s:%s" % (HOST_NAME, PORT_NUMBER)
-    except:
-      print "Fail"
+    server_class = BaseHTTPServer.HTTPServer
+    httpd = server_class((HOST_NAME, PORT_NUMBER), MyHandler)
+    httpd.socket = ssl.wrap_socket (httpd.socket, certfile=CERT_PATH, server_side=True)
+    print time.asctime(), "Server Starts - %s:%s" % (HOST_NAME, PORT_NUMBER)
+    httpd.serve_forever()
+    httpd.server_close()
+    print time.asctime(), "Server Stops - %s:%s" % (HOST_NAME, PORT_NUMBER)

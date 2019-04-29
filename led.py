@@ -30,11 +30,11 @@ nice_colors = [
 ]
 
 basic_colors = {
-  'красный': [253, 0, 0],
-  'зеленый': [0, 253, 0],
-  'синий': [0, 0, 253],
-  'белый': [253, 253, 253],
-  'черный': [254, 254, 254],
+  'красный': [255, 0, 0],
+  'зеленый': [0, 255, 0],
+  'синий': [0, 0, 255],
+  'белый': [255, 255, 255],
+  'черный': [0, 0, 0],
 }
 
 def set_bulb_color(color, bulb):
@@ -42,7 +42,7 @@ def set_bulb_color(color, bulb):
       color = basic_colors[color]
     else:
       color = process(calc_color(load(color)))
-    if(color == [254, 254, 254]):
+    if(color == [0, 0, 0]):
       bulb.turn_off()
     else:
       bulb.turn_on()
@@ -76,12 +76,12 @@ def calc_color(path):
   avg_color = numpy.average(avg_color_per_row, axis=0)
   return avg_color
 
-def led_color(color, sock):
+def led_color(color, LED_LINK):
   if color in basic_colors:
     color = basic_colors[color]
   else:
     color = process(calc_color(load(color)))
-  send(color, sock)
+  send(color, LED_LINK)
 
 
 def process(array):
@@ -99,9 +99,9 @@ def process(array):
     if(max < array[color]):
       max = array[color]
     res.append(int(array[color]))
-  res[0] = int(min(3.0 * math.pow((res[0] / max), 3.0), 1.0) * 253.0) * sum
-  res[1] = int(min(3.0 * math.pow((res[1] / max), 3.0), 1.0) * 253.0) * sum
-  res[2] = int(min(3.0 * math.pow((res[2] / max), 3.0), 1.0) * 253.0) * sum
+  res[0] = int(min(3.0 * math.pow((res[0] / max), 3.0), 1.0) * 255.0) * sum
+  res[1] = int(min(3.0 * math.pow((res[1] / max), 3.0), 1.0) * 255.0) * sum
+  res[2] = int(min(3.0 * math.pow((res[2] / max), 3.0), 1.0) * 255.0) * sum
   return res
 
 def new_val(old_val):
@@ -110,16 +110,12 @@ def new_val(old_val):
     res = random.randint(0, len(nice_colors) - 1) 
   return res
 
-def send(color, sock):
-  rgbStr = []
-  for i in range(0,3):
-    rgbStr.append(chr(int(color[i])))
-  rgbStr.append(chr(int(255)))
-  res = ''.join(rgbStr)
-  sock.send(res)
+def send(color, LED_LINK):
+  color = map(lambda x : x*4, color)
+  urllib2.urlopen(LED_LINK + "led?r=" + str(color[0]) + "&g=" + str(color[1]) + "&b=" + str(color[2])).read()
 
 
-def equalizer(sock):
+def equalizer(LED_LINK):
     STAGE_COUNT = 50
     _stage = 0
     _from = 0
@@ -137,4 +133,4 @@ def equalizer(sock):
       else:
         _res = map(operator.add, _res, _offset)
         _stage = _stage - 1
-        send(_res, sock)
+        send(_res, LED_LINK)

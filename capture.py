@@ -6,7 +6,6 @@ import numpy
 import time
 from defines import *
 
-bluetooth_sock = connect(MAC_BLUETOOTH)
 last = [0,0,0]
 w = gtk.gdk.get_default_root_window()
 sz = w.get_size()
@@ -19,5 +18,5 @@ while True:
     color = process(avg_color)
     if(color != last):
         time.sleep(0.025)
-        send(color, bluetooth_sock)
+        send(color, LED_LINK)
         last = color
