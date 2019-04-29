@@ -19,11 +19,10 @@ def cleaner_command(ip, token, dir, command):
     subprocess.Popen([dir, command], env=my_env)
 
 def get_sensors(SENSORS_LINK):
-  vals = urllib2.urlopen(SENSORS_LINK).read()
+  vals = urllib2.urlopen(SENSORS_LINK + "sensors").read()
   vals = vals.split('/')
   res = []
   for val in vals:
     val = val.split('.')
-    print val[0]
     res.append(num2words(val[0], lang='ru'))
   return res

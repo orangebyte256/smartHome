@@ -74,10 +74,10 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
               res["response"] = pos_response()
 
           if token_exist(data["request"]["nlu"]["tokens"], u"температура"):
-              res["response"] = custom_responce("Текущая температура " + get_sensors()[0].encode('utf-8') + " градусов")
+              res["response"] = custom_responce("Текущая температура " + get_sensors(SENSORS_LINK)[0].encode('utf-8') + " градусов")
 
           if token_exist(data["request"]["nlu"]["tokens"], u"влажность"):
-              res["response"] = custom_responce("Текущая влажность " + get_sensors()[1].encode('utf-8') + " процентов")
+              res["response"] = custom_responce("Текущая влажность " + get_sensors(SENSORS_LINK)[1].encode('utf-8') + " процентов")
 
           if token_exist(data["request"]["nlu"]["tokens"], u"эквалайзер"):
             if is_on(data["request"]["nlu"]["tokens"]) or is_off(data["request"]["nlu"]["tokens"]):
