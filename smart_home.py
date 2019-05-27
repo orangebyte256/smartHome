@@ -96,6 +96,10 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             s.send_response(200)
             s.send_header("Content-type", "text/html")
             s.end_headers()
+        elif s.path == '/authorize':
+            print "hi"
+            print s.path
+            print s.headers
         elif s.path == '/v1.0/user/devices':
             devices(s)
     def do_POST(s):
