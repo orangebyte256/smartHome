@@ -36,6 +36,15 @@ bulb = Bulb(BULB_IP)
 db = TinyDB('./db.json')
 Devices = Query()
 
+JALOUSIE = '1'
+SWITCH = '2'
+
+functions = {
+    'devices.capabilities.on_off': [
+        {SWITCH : lambda state : set_switch(SWITCH_IP, SWITCH_ID, SWITCH_KEY, state)}
+    ]
+}
+
 def answer(s, devices, data):
     res = dict()
     res["request_id"] = s.headers.getheader("X-Request-Id")
@@ -97,6 +106,7 @@ def devices_set_state(s):
         for capabilitie in item["capabilities"]:
             capabilitie_result = capabilitie
             print capabilitie["state"]["value"]
+            functions[capabilitie["type"]][item["id"]](capabilitie["state"]["value"])
             capabilitie_result["state"].pop("value")
             capabilitie_result["state"]["action_result"] = {"status": "DONE"}
             device["capabilities"].append(capabilitie_result)
