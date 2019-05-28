@@ -74,10 +74,11 @@ def devices_state(s, set_state):
         device["capabilities"] = []
         for capabilitie in query_item[0]["capabilities"]:
             capabilitie_item = query_item[0]["custom_data"][capabilitie["type"]]
-            capabilitie_item["type"] = capabilitie["type"]
             if set_state:
-                capabilitie_item["state"].pop("value")
+                print capabilitie_item["state"]
                 capabilitie_item["state"]["action_result"] = {"status": "DONE"}
+            else:
+                capabilitie_item["type"] = capabilitie["type"]
             device["capabilities"].append(capabilitie_item)
         result.append(device)
     answer(s, result, data)
