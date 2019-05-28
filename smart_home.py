@@ -57,7 +57,7 @@ def devices(s):
     answer(s, result, None)
 
     
-def devices_state(s, set_state):
+def devices_state(s):
     content_len = int(s.headers.getheader('content-length', 0))
     post_body = s.rfile.read(content_len)
     data = json.loads(post_body)
@@ -74,12 +74,32 @@ def devices_state(s, set_state):
         device["capabilities"] = []
         for capabilitie in query_item[0]["capabilities"]:
             capabilitie_item = query_item[0]["custom_data"][capabilitie["type"]]
-            if set_state:
-                print capabilitie_item["state"]
-                capabilitie_item["state"]["action_result"] = {"status": "DONE"}
-            else:
-                capabilitie_item["type"] = capabilitie["type"]
+            capabilitie_item["type"] = capabilitie["type"]
             device["capabilities"].append(capabilitie_item)
+        result.append(device)
+    answer(s, result, data)
+
+def devices_set_state(s):
+    content_len = int(s.headers.getheader('content-length', 0))
+    post_body = s.rfile.read(content_len)
+    data = json.loads(post_body)
+    result = []
+    items = None
+    if "payload" in data:
+        items = data["payload"]["devices"]
+    else:
+        items = data["devices"]
+    for item in items:
+        query_item = db.search(Devices.id == item["id"])
+        device = {}
+        device["id"] = item["id"]
+        device["capabilities"] = []
+        for capabilitie in item["capabilities"]:
+            capabilitie_result = capabilitie
+            print capabilitie["state"]["value"]
+            capabilitie_result["state"].pop("value")
+            capabilitie_result["state"]["action_result"] = {"status": "DONE"}
+            device["capabilities"].append(capabilitie_result)
         result.append(device)
     answer(s, result, data)
 
@@ -116,9 +136,9 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         if s.path == '/v1.0/user/unlink':
             answer(s, None, None)
         elif s.path == '/v1.0/user/devices/query':
-            devices_state(s, False)
+            devices_state(s)
         elif s.path == '/v1.0/user/devices/action':
-            devices_state(s, True)
+            devices_set_state(s)
         elif s.path == '/token':
             s.send_response(200)
             s.send_header("Content-type", "application/json; charset=utf-8")
