@@ -13,10 +13,9 @@ import random
 import serial
 import requests
 import subprocess, os
-import urllib2
 import bluetooth
 from defines import *
-from pathlib import Path
+import urllib
 from google_images_download import google_images_download   #importing the library
 from multiprocessing import Process
 from lex_token import * 
@@ -25,6 +24,7 @@ from devices import *
 from num2words import num2words
 from yeelight import Bulb
 from tinydb import TinyDB, Query
+from urlparse import urlparse
 
 random.seed()
 
@@ -89,6 +89,7 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         s.send_header("Content-type", "text/html")
         s.end_headers()
     def do_GET(s):
+        print s.path
         if s.path == '/init':
             db.purge()
             db.insert({'id': '1', 'name': 'jalousie', 'room': 'living_room', 'type': 'devices.types.switch', 'capabilities': [{"type": "devices.capabilities.on_off"}], 'custom_data': {'devices.capabilities.on_off': {'state': {"instance": "on", "value": True}}}})
@@ -96,22 +97,38 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             s.send_response(200)
             s.send_header("Content-type", "text/html")
             s.end_headers()
-        elif s.path == '/authorize':
-            print "hi"
-            print s.path
-            print s.headers
+        elif s.path.find('/authorize') != -1:
+            query = urllib.unquote(s.path).decode('utf8')
+            query = query.split("?")[1]
+            query_components = dict(qc.split("=") for qc in query.split("&"))
+            result = urllib.urlencode({'code': '7737244', 'state': query_components['state']})
+            result = query_components['redirect_uri'] + '?' + result
+            print query_components
+            print result
+            s.send_response(301)
+            s.send_header('Location',result)
+            s.end_headers()
         elif s.path == '/v1.0/user/devices':
             devices(s)
     def do_POST(s):
         print s.path
         if s.path == '/v1.0/user/unlink':
-            print "2"
             answer(s, None, None)
         elif s.path == '/v1.0/user/devices/query':
             devices_state(s, False)
         elif s.path == '/v1.0/user/devices/action':
             devices_state(s, True)
-
+        elif s.path == '/token':
+            s.send_response(200)
+            s.send_header("Content-type", "application/json; charset=utf-8")
+            s.end_headers()
+            res = {
+                "token_type": "bearer",
+                "access_token": "AQAAAACy1C6ZAAAAfa6vDLuItEy8pg-iIpnDxIs",
+                "expires_in": 124234123534,
+                "refresh_token": "1:GN686QVt0mmakDd9:A4pYuW9LGk0_UnlrMIWklkAuJkUWbq27loFekJVmSYrdfzdePBy7:A-2dHOmBxiXgajnD-kYOwQ"
+            }
+            s.wfile.write(json.dumps(res))
 if __name__ == '__main__':
     server_class = BaseHTTPServer.HTTPServer
     httpd = server_class((HOST_NAME, PORT_NUMBER), MyHandler)
