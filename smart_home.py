@@ -38,6 +38,7 @@ Devices = Query()
 
 JALOUSIE = '1'
 SWITCH = '2'
+LED = '3'
 
 functions = {
     'devices.capabilities.on_off': 
@@ -122,21 +123,31 @@ def devices_set_state(s):
         result.append(device)
     answer(s, result, data)
 
+def send_ok(s):
+    s.send_response(200)
+    s.send_header("Content-type", "text/html")
+    s.end_headers()
+
+def item_not_exist(id):
+    return len(db.search(Devices.id == id)) == 0
 
 class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     def do_HEAD(s):
-        s.send_response(200)
-        s.send_header("Content-type", "text/html")
-        s.end_headers()
+        send_ok(s)
     def do_GET(s):
         print s.path
+        if s.path == '/clean':
+            db.purge()
+            send_ok(s)
         if s.path == '/init':
             db.purge()
-            db.insert({'id': '1', 'name': 'jalousie', 'room': 'living_room', 'type': 'devices.types.switch', 'capabilities': [{"type": "devices.capabilities.on_off"}], 'custom_data': {'devices.capabilities.on_off': {'state': {"instance": "on", "value": True}}}})
-            db.insert({'id': '2', 'name': 'switch', 'room': 'living_room', 'type': 'devices.types.switch', 'capabilities': [{"type": "devices.capabilities.on_off"}], 'custom_data': {'devices.capabilities.on_off': {'state': {"instance": "on", "value": True}}}})
-            s.send_response(200)
-            s.send_header("Content-type", "text/html")
-            s.end_headers()
+            if item_not_exist(JALOUSIE):
+                db.insert({'id': JALOUSIE, 'name': 'jalousie', 'room': 'living_room', 'type': 'devices.types.switch', 'capabilities': [{"type": "devices.capabilities.on_off"}], 'custom_data': {'devices.capabilities.on_off': {'state': {"instance": "on", "value": True}}}})
+            if item_not_exist(SWITCH):
+                db.insert({'id': SWITCH, 'name': 'switch', 'room': 'living_room', 'type': 'devices.types.switch', 'capabilities': [{"type": "devices.capabilities.on_off"}], 'custom_data': {'devices.capabilities.on_off': {'state': {"instance": "on", "value": True}}}})
+            if item_not_exist(LED):
+                db.insert({'id': LED, 'name': 'led', 'room': 'living_room', 'type': 'devices.types.light', 'capabilities': [{"type": "devices.capabilities.on_off"}, {"type": "devices.capabilities.color_setting", "parameters": { "color_model": "rgb", "temperature_k": {"min": 2700, "max": 9000, "precision": 1}}}], 'custom_data': {'devices.capabilities.on_off': {'state': {"instance": "on", "value": True}}, 'devices.capabilities.color_setting': {'state': {"instance": "rgb","value": {"r": 0,"g": 0,"b": 0}}}}})                
+            send_ok(s)
         elif s.path.find('/authorize') != -1:
             query = urllib.unquote(s.path).decode('utf8')
             query = query.split("?")[1]
