@@ -40,9 +40,8 @@ JALOUSIE = '1'
 SWITCH = '2'
 
 functions = {
-    'devices.capabilities.on_off': [
+    'devices.capabilities.on_off': 
         {SWITCH : lambda state : set_switch(SWITCH_IP, SWITCH_ID, SWITCH_KEY, state)}
-    ]
 }
 
 def answer(s, devices, data):

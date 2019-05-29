@@ -3,11 +3,13 @@ import subprocess, os
 import time
 import bluetooth
 import urllib2
+from time import sleep
 from num2words import num2words
 
 def set_switch(ip, id, key, state):
     d = pytuya.OutletDevice(id, ip, key)
     while d.status()['dps']['1'] != state:
+        sleep(0.5)
         d.set_status(state)
 
 def cleaner_command(ip, token, dir, command):
