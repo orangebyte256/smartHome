@@ -41,7 +41,10 @@ SWITCH = '2'
 
 functions = {
     'devices.capabilities.on_off': 
-        {SWITCH : lambda state : set_switch(SWITCH_IP, SWITCH_ID, SWITCH_KEY, state)}
+    {
+        SWITCH : lambda state : set_switch(SWITCH_IP, SWITCH_ID, SWITCH_KEY, state), 
+        JALOUSIE : lambda state : set_jalousie(JALOUSIE_LINK, state)
+    }
 }
 
 def answer(s, devices, data):
@@ -105,9 +108,14 @@ def devices_set_state(s):
         for capabilitie in item["capabilities"]:
             capabilitie_result = capabilitie
             print capabilitie["state"]["value"]
-            functions[capabilitie["type"]][item["id"]](capabilitie["state"]["value"])
+            if capabilitie["state"]["value"] != query_item["custom_data"][capabilitie["type"]]["state"]["value"]:
+                functions[capabilitie["type"]][item["id"]](capabilitie["state"]["value"])
+                query_item["custom_data"][capabilitie["type"]]["state"]["value"] = capabilitie["state"]["value"]
+                db.update(query_item, Devices.id == item["id"])
+                capabilitie_result["state"]["action_result"] = {"status": "DONE"}
+            else:
+                capabilitie_result["state"]["action_result"] = {"status": "ERROR", "error_code": "INVALID_ACTION", "error_message": "Value the same"}
             capabilitie_result["state"].pop("value")
-            capabilitie_result["state"]["action_result"] = {"status": "DONE"}
             device["capabilities"].append(capabilitie_result)
         result.append(device)
     answer(s, result, data)

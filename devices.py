@@ -12,6 +12,13 @@ def set_switch(ip, id, key, state):
         sleep(0.5)
         d.set_status(state)
 
+def set_jalousie(path, state):
+    if state:
+        urllib2.urlopen(path + "open").read()
+    else:
+        urllib2.urlopen(path + "close").read()
+
+
 def cleaner_command(ip, token, dir, command):
     my_env = os.environ.copy()
     my_env["MIROBO_IP"] = ip
