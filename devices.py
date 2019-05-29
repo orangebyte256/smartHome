@@ -3,8 +3,10 @@ import subprocess, os
 import time
 import bluetooth
 import urllib2
+from led import send
 from time import sleep
 from num2words import num2words
+import colorsys
 
 def set_switch(ip, id, key, state):
     d = pytuya.OutletDevice(id, ip, key)
@@ -18,6 +20,16 @@ def set_jalousie(path, state):
     else:
         urllib2.urlopen(path + "close").read()
 
+def set_led(path, state):
+    if state:
+        send([0,0,0], path)
+    else:
+        send([255,255,255], path)
+
+def set_led_color(path, state):
+    color = list(colorsys.hsv_to_rgb(state["h"], state["s"], state["v"]))
+    color = map(lambda x : x*255, color)
+    send(color, path)
 
 def cleaner_command(ip, token, dir, command):
     my_env = os.environ.copy()

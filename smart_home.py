@@ -44,8 +44,13 @@ functions = {
     'devices.capabilities.on_off': 
     {
         SWITCH : lambda state : set_switch(SWITCH_IP, SWITCH_ID, SWITCH_KEY, state), 
-        JALOUSIE : lambda state : set_jalousie(JALOUSIE_LINK, state)
-    }
+        JALOUSIE : lambda state : set_jalousie(JALOUSIE_LINK, state),
+        LED : lambda state : set_led(JALOUSIE_LINK, state)
+    },
+    'devices.capabilities.color_setting': 
+    {
+        LED : lambda state : set_led_color(JALOUSIE_LINK, state)
+    },
 }
 
 def answer(s, devices, data):
@@ -146,7 +151,7 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             if item_not_exist(SWITCH):
                 db.insert({'id': SWITCH, 'name': 'switch', 'room': 'living_room', 'type': 'devices.types.switch', 'capabilities': [{"type": "devices.capabilities.on_off"}], 'custom_data': {'devices.capabilities.on_off': {'state': {"instance": "on", "value": True}}}})
             if item_not_exist(LED):
-                db.insert({'id': LED, 'name': 'led', 'room': 'living_room', 'type': 'devices.types.light', 'capabilities': [{"type": "devices.capabilities.on_off"}, {"type": "devices.capabilities.color_setting", "parameters": { "color_model": "rgb", "temperature_k": {"min": 2700, "max": 9000, "precision": 1}}}], 'custom_data': {'devices.capabilities.on_off': {'state': {"instance": "on", "value": True}}, 'devices.capabilities.color_setting': {'state': {"instance": "rgb","value": {"r": 0,"g": 0,"b": 0}}}}})                
+                db.insert({'id': LED, 'name': 'led', 'room': 'living_room', 'type': 'devices.types.light', 'capabilities': [{"type": "devices.capabilities.on_off"}, {"type": "devices.capabilities.color_setting", "parameters": { "color_model": "hsv", "temperature_k": {"min": 2700, "max": 9000, "precision": 1}}}], 'custom_data': {'devices.capabilities.on_off': {'state': {"instance": "on", "value": True}}, 'devices.capabilities.color_setting': {'state': {"instance": "hsv","value": {"h": 0,"s": 0,"v": 0}}}}})                
             send_ok(s)
         elif s.path.find('/authorize') != -1:
             query = urllib.unquote(s.path).decode('utf8')
