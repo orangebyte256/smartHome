@@ -45,11 +45,11 @@ functions = {
     {
         SWITCH : lambda state : set_switch(SWITCH_IP, SWITCH_ID, SWITCH_KEY, state), 
         JALOUSIE : lambda state : set_jalousie(JALOUSIE_LINK, state),
-        LED : lambda state : set_led(JALOUSIE_LINK, state)
+        LED : lambda state : set_led(LED_LINK, state)
     },
     'devices.capabilities.color_setting': 
     {
-        LED : lambda state : set_led_color(JALOUSIE_LINK, state)
+        LED : lambda state : set_led_color(LED_LINK, state)
     },
 }
 
@@ -113,6 +113,7 @@ def devices_set_state(s):
         device["capabilities"] = []
         for capabilitie in item["capabilities"]:
             capabilitie_result = capabilitie
+            print capabilitie
             print capabilitie["state"]["value"]
             query_item = query_item[0]
             if capabilitie["state"]["value"] != query_item["custom_data"][capabilitie["type"]]["state"]["value"]:

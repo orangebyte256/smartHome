@@ -112,6 +112,7 @@ def new_val(old_val):
 
 def send(color, LED_LINK):
   color = map(lambda x : x*4, color)
+  print color
   urllib2.urlopen(LED_LINK + "led?r=" + str(color[0]) + "&g=" + str(color[1]) + "&b=" + str(color[2])).read()
 
 

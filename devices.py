@@ -22,13 +22,15 @@ def set_jalousie(path, state):
 
 def set_led(path, state):
     if state:
-        send([0,0,0], path)
-    else:
         send([255,255,255], path)
+    else:
+        send([0,0,0], path)
 
 def set_led_color(path, state):
-    color = list(colorsys.hsv_to_rgb(state["h"], state["s"], state["v"]))
-    color = map(lambda x : x*255, color)
+    print state
+    color = list(colorsys.hsv_to_rgb(state["h"] / 360.0, state["s"] / 100.0, state["v"] / 100.0))
+    color = map(lambda x : int(x*255), color)
+    print color
     send(color, path)
 
 def cleaner_command(ip, token, dir, command):
