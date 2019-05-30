@@ -20,11 +20,17 @@ def set_jalousie(path, state):
     else:
         urllib2.urlopen(path + "close").read()
 
-def set_led(path, state):
+def set_led(path, state, color):
     if state:
-        send([255,255,255], path)
+        set_led_color(path, color)
     else:
         send([0,0,0], path)
+
+def set_bulb(bulb, state):
+    if state:
+        bulb.turn_on()
+    else:
+        bulb.turn_off()
 
 def set_led_color(path, state):
     print state
@@ -32,6 +38,10 @@ def set_led_color(path, state):
     color = map(lambda x : int(x*255), color)
     print color
     send(color, path)
+
+def set_bulb_color(bulb, state):
+    print state
+    bulb.set_hsv(state["h"], state["s"], state["v"])
 
 def cleaner_command(ip, token, dir, command):
     my_env = os.environ.copy()

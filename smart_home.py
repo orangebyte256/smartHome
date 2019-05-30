@@ -39,18 +39,22 @@ Devices = Query()
 JALOUSIE = '1'
 SWITCH = '2'
 LED = '3'
+BULB = '4'
 
 functions = {
     'devices.capabilities.on_off': 
     {
         SWITCH : lambda state : set_switch(SWITCH_IP, SWITCH_ID, SWITCH_KEY, state), 
         JALOUSIE : lambda state : set_jalousie(JALOUSIE_LINK, state),
-        LED : lambda state : set_led(LED_LINK, state)
+        LED : lambda state : set_led(LED_LINK, state, 
+            db.search(Devices.id == LED)[0]["custom_data"]["devices.capabilities.color_setting"]["state"]["value"]),
+        BULB : lambda state : set_bulb(bulb, state)
     },
     'devices.capabilities.color_setting': 
     {
-        LED : lambda state : set_led_color(LED_LINK, state)
-    },
+        LED : lambda state : set_led_color(LED_LINK, state),
+        BULB : lambda state : set_bulb_color(bulb, state)
+    }
 }
 
 def answer(s, devices, data):
@@ -135,7 +139,7 @@ def send_ok(s):
     s.end_headers()
 
 def item_not_exist(id):
-    return len(db.search(Devices.id == id)) == 0
+    return len(db.search(Devices.id == str(id))) == 0
 
 class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     def do_HEAD(s):
@@ -146,13 +150,14 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             db.purge()
             send_ok(s)
         if s.path == '/init':
-            db.purge()
             if item_not_exist(JALOUSIE):
                 db.insert({'id': JALOUSIE, 'name': 'jalousie', 'room': 'living_room', 'type': 'devices.types.switch', 'capabilities': [{"type": "devices.capabilities.on_off"}], 'custom_data': {'devices.capabilities.on_off': {'state': {"instance": "on", "value": True}}}})
             if item_not_exist(SWITCH):
                 db.insert({'id': SWITCH, 'name': 'switch', 'room': 'living_room', 'type': 'devices.types.switch', 'capabilities': [{"type": "devices.capabilities.on_off"}], 'custom_data': {'devices.capabilities.on_off': {'state': {"instance": "on", "value": True}}}})
             if item_not_exist(LED):
                 db.insert({'id': LED, 'name': 'led', 'room': 'living_room', 'type': 'devices.types.light', 'capabilities': [{"type": "devices.capabilities.on_off"}, {"type": "devices.capabilities.color_setting", "parameters": { "color_model": "hsv", "temperature_k": {"min": 2700, "max": 9000, "precision": 1}}}], 'custom_data': {'devices.capabilities.on_off': {'state': {"instance": "on", "value": True}}, 'devices.capabilities.color_setting': {'state': {"instance": "hsv","value": {"h": 0,"s": 0,"v": 0}}}}})                
+            if item_not_exist(BULB):
+                db.insert({'id': BULB, 'name': 'bulb', 'room': 'living_room', 'type': 'devices.types.light', 'capabilities': [{"type": "devices.capabilities.on_off"}, {"type": "devices.capabilities.color_setting", "parameters": { "color_model": "hsv", "temperature_k": {"min": 2700, "max": 9000, "precision": 1}}}], 'custom_data': {'devices.capabilities.on_off': {'state': {"instance": "on", "value": True}}, 'devices.capabilities.color_setting': {'state': {"instance": "hsv","value": {"h": 0,"s": 0,"v": 0}}}}})                
             send_ok(s)
         elif s.path.find('/authorize') != -1:
             query = urllib.unquote(s.path).decode('utf8')
