@@ -54,6 +54,11 @@ functions = {
     {
         LED : lambda state : set_led_color(LED_LINK, state),
         BULB : lambda state : set_bulb_color(bulb, state)
+    },
+    'devices.capabilities.range': 
+    {
+        LED : lambda range : set_led_range(LED_LINK, db.search(Devices.id == LED)[0]["custom_data"]["devices.capabilities.color_setting"]["state"]["value"], range),
+        BULB : lambda range : set_bulb_range(bulb, None, range)
     }
 }
 
@@ -155,9 +160,9 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             if item_not_exist(SWITCH):
                 db.insert({'id': SWITCH, 'name': 'switch', 'room': 'living_room', 'type': 'devices.types.switch', 'capabilities': [{"type": "devices.capabilities.on_off"}], 'custom_data': {'devices.capabilities.on_off': {'state': {"instance": "on", "value": True}}}})
             if item_not_exist(LED):
-                db.insert({'id': LED, 'name': 'led', 'room': 'living_room', 'type': 'devices.types.light', 'capabilities': [{"type": "devices.capabilities.on_off"}, {"type": "devices.capabilities.color_setting", "parameters": { "color_model": "hsv", "temperature_k": {"min": 2700, "max": 9000, "precision": 1}}}], 'custom_data': {'devices.capabilities.on_off': {'state': {"instance": "on", "value": True}}, 'devices.capabilities.color_setting': {'state': {"instance": "hsv","value": {"h": 0,"s": 0,"v": 0}}}}})                
+                db.insert({'id': LED, 'name': 'led', 'room': 'living_room', 'type': 'devices.types.light', 'capabilities': [{"type": "devices.capabilities.on_off"}, {"type": "devices.capabilities.color_setting", "parameters": { "color_model": "hsv", "temperature_k": {"min": 2700, "max": 9000, "precision": 1}}}, {"type": "devices.capabilities.range", "parameters": { "instance": "brightness", "unit": "unit.percent", "range": {"min": 0, "max": 100, "precision": 10}}}], 'custom_data': {'devices.capabilities.on_off': {'state': {"instance": "on", "value": True}}, 'devices.capabilities.color_setting': {'state': {"instance": "hsv","value": {"h": 0,"s": 0,"v": 0}}}, 'devices.capabilities.range': {'state': {"instance": "brightness","value": 0}}}})                
             if item_not_exist(BULB):
-                db.insert({'id': BULB, 'name': 'bulb', 'room': 'living_room', 'type': 'devices.types.light', 'capabilities': [{"type": "devices.capabilities.on_off"}, {"type": "devices.capabilities.color_setting", "parameters": { "color_model": "hsv", "temperature_k": {"min": 2700, "max": 9000, "precision": 1}}}], 'custom_data': {'devices.capabilities.on_off': {'state': {"instance": "on", "value": True}}, 'devices.capabilities.color_setting': {'state': {"instance": "hsv","value": {"h": 0,"s": 0,"v": 0}}}}})                
+                db.insert({'id': BULB, 'name': 'bulb', 'room': 'living_room', 'type': 'devices.types.light', 'capabilities': [{"type": "devices.capabilities.on_off"}, {"type": "devices.capabilities.color_setting", "parameters": { "color_model": "hsv", "temperature_k": {"min": 2700, "max": 9000, "precision": 1}}}, {"type": "devices.capabilities.range", "parameters": { "instance": "brightness", "unit": "unit.percent", "range": {"min": 0, "max": 100, "precision": 10}}}], 'custom_data': {'devices.capabilities.on_off': {'state': {"instance": "on", "value": True}}, 'devices.capabilities.color_setting': {'state': {"instance": "hsv","value": {"h": 0,"s": 0,"v": 0}}}, 'devices.capabilities.range': {'state': {"instance": "brightness","value": 0}}}})                
             send_ok(s)
         elif s.path.find('/authorize') != -1:
             query = urllib.unquote(s.path).decode('utf8')
