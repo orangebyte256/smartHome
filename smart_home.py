@@ -44,21 +44,32 @@ BULB = '4'
 functions = {
     'devices.capabilities.on_off': 
     {
-        SWITCH : lambda state : set_switch(SWITCH_IP, SWITCH_ID, SWITCH_KEY, state), 
-        JALOUSIE : lambda state : set_jalousie(JALOUSIE_LINK, state),
-        LED : lambda state : set_led(LED_LINK, state, 
-            db.search(Devices.id == LED)[0]["custom_data"]["devices.capabilities.color_setting"]["state"]["value"]),
-        BULB : lambda state : set_bulb(bulb, state)
+        "on" : {
+            SWITCH : lambda state : set_switch(SWITCH_IP, SWITCH_ID, SWITCH_KEY, state), 
+            JALOUSIE : lambda state : set_jalousie(JALOUSIE_LINK, state),
+            LED : lambda state : set_led(LED_LINK, state, 
+                db.search(Devices.id == LED)[0]["custom_data"]["devices.capabilities.color_setting"]["state"]["value"]),
+            BULB : lambda state : set_bulb(bulb, state)
+        }
     },
     'devices.capabilities.color_setting': 
     {
-        LED : lambda state : set_led_color(LED_LINK, state),
-        BULB : lambda state : set_bulb_color(bulb, state)
+        "hsv": {
+            LED : lambda state : set_led_color(LED_LINK, state),
+            BULB : lambda state : set_bulb_color(bulb, state)
+        },
+        "temperature_k": {
+            LED : lambda state : set_led_color(LED_LINK, {'h':0, 's':0, 'v':650000 / state}),
+            BULB : lambda state : set_bulb_color(bulb, {'h':0, 's':0, 'v':650000 / state})
+        }
+
     },
     'devices.capabilities.range': 
     {
-        LED : lambda range : set_led_range(LED_LINK, db.search(Devices.id == LED)[0]["custom_data"]["devices.capabilities.color_setting"]["state"]["value"], range),
-        BULB : lambda range : set_bulb_range(bulb, None, range)
+        "brightness": {
+            LED : lambda range : set_led_range(LED_LINK, db.search(Devices.id == LED)[0]["custom_data"]["devices.capabilities.color_setting"]["state"]["value"], range),
+            BULB : lambda range : set_bulb_range(bulb, None, range)
+        }
     }
 }
 
@@ -126,7 +137,7 @@ def devices_set_state(s):
             print capabilitie["state"]["value"]
             query_item = query_item[0]
             if capabilitie["state"]["value"] != query_item["custom_data"][capabilitie["type"]]["state"]["value"]:
-                functions[capabilitie["type"]][item["id"]](capabilitie["state"]["value"])
+                functions[capabilitie["type"]][item["id"]][capabilitie["state"]["instance"]](capabilitie["state"]["value"])
                 query_item["custom_data"][capabilitie["type"]]["state"]["value"] = capabilitie["state"]["value"]
                 db.update(query_item, Devices.id == item["id"])
                 capabilitie_result["state"]["action_result"] = {"status": "DONE"}
