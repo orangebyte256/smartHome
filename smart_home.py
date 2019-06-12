@@ -40,6 +40,8 @@ JALOUSIE = '1'
 SWITCH = '2'
 LED = '3'
 BULB = '4'
+SENSOR_TEMPERATURE = '5'
+SENSOR_HUMIDITY = '6'
 
 functions = {
     'devices.capabilities.on_off': 
@@ -112,6 +114,9 @@ def devices_state(s):
         for capabilitie in query_item[0]["capabilities"]:
             capabilitie_item = query_item[0]["custom_data"][capabilitie["type"]]
             capabilitie_item["type"] = capabilitie["type"]
+            if device["id"] == SENSOR_HUMIDITY or device["id"] == SENSOR_TEMPERATURE:
+                result = get_sensors(SENSORS_LINK)
+                capabilitie_item["state"]["value"] = result[int(device["id"]) - 5]
             device["capabilities"].append(capabilitie_item)
         result.append(device)
     answer(s, result, data)
@@ -178,6 +183,10 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                 db.insert({'id': LED, 'name': 'led', 'room': 'living_room', 'type': 'devices.types.light', 'capabilities': [{"type": "devices.capabilities.on_off"}, {"type": "devices.capabilities.color_setting", "parameters": { "color_model": "hsv", "temperature_k": {"min": 2700, "max": 9000, "precision": 1}}}, {"type": "devices.capabilities.range", "parameters": { "instance": "brightness", "unit": "unit.percent", "range": {"min": 0, "max": 100, "precision": 10}}}], 'custom_data': {'devices.capabilities.on_off': {'state': {"instance": "on", "value": True}}, 'devices.capabilities.color_setting': {'state': {"instance": "hsv","value": {"h": 0,"s": 0,"v": 0}}}, 'devices.capabilities.range': {'state': {"instance": "brightness","value": 0}}}})                
             if item_not_exist(BULB):
                 db.insert({'id': BULB, 'name': 'bulb', 'room': 'living_room', 'type': 'devices.types.light', 'capabilities': [{"type": "devices.capabilities.on_off"}, {"type": "devices.capabilities.color_setting", "parameters": { "color_model": "hsv", "temperature_k": {"min": 2700, "max": 9000, "precision": 1}}}, {"type": "devices.capabilities.range", "parameters": { "instance": "brightness", "unit": "unit.percent", "range": {"min": 0, "max": 100, "precision": 10}}}], 'custom_data': {'devices.capabilities.on_off': {'state': {"instance": "on", "value": True}}, 'devices.capabilities.color_setting': {'state': {"instance": "hsv","value": {"h": 0,"s": 0,"v": 0}}}, 'devices.capabilities.range': {'state': {"instance": "brightness","value": 0}}}})                
+            if item_not_exist(SENSOR_TEMPERATURE):
+                db.insert({'id': SENSOR_TEMPERATURE, 'name': 'temperature', 'room': 'living_room', 'type': 'devices.types.thermostat', 'capabilities': [{"type": "devices.capabilities.range", "parameters": { "instance": "temperature", "unit": "unit.percent", "range": {"min": 0, "max": 100, "precision": 1}}}], 'custom_data': {'devices.capabilities.range': {'state': {"instance": "temperature","value": 0}}}})                
+            if item_not_exist(SENSOR_HUMIDITY):
+                db.insert({'id': SENSOR_HUMIDITY, 'name': 'temperature', 'room': 'living_room', 'type': 'devices.types.thermostat', 'capabilities': [{"type": "devices.capabilities.range", "parameters": { "instance": "temperature", "unit": "unit.percent", "range": {"min": 0, "max": 100, "precision": 1}}}], 'custom_data': {'devices.capabilities.range': {'state': {"instance": "temperature","value": 0}}}})                
             send_ok(s)
         elif s.path.find('/authorize') != -1:
             query = urllib.unquote(s.path).decode('utf8')
