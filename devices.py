@@ -56,11 +56,19 @@ def cleaner_command(ip, token, dir, command):
     my_env["LANG"] = "C.UTF-8"
     subprocess.Popen([dir, command], env=my_env)
 
+def read_temperature(SENSORS_LINK):
+  vals = urllib2.urlopen(SENSORS_LINK + "sensors").read()
+  vals = vals.split('.')
+  if len(vals) == 1:
+    return -1
+  return vals[0]
+
 def get_sensors(SENSORS_LINK):
   vals = urllib2.urlopen(SENSORS_LINK + "sensors").read()
   vals = vals.split('/')
   res = []
   for val in vals:
     val = val.split('.')
-    res.append(num2words(val[0], lang='ru'))
+    res.append(val[0])
+#    res.append(num2words(val[0], lang='ru'))
   return res
