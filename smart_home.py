@@ -59,8 +59,8 @@ functions = {
             BULB : lambda state : set_bulb_color(bulb, state)
         },
         "temperature_k": {
-            LED : lambda state : set_led_color(LED_LINK, {'h':0, 's':0, 'v':650000 / state}),
-            BULB : lambda state : set_bulb_color(bulb, {'h':0, 's':0, 'v':650000 / state})
+            LED : lambda state : set_led_color(LED_LINK, {'h':0, 's':0, 'v':state / 65 }),
+            BULB : lambda state : set_bulb_color(bulb, {'h':0, 's':0, 'v':state / 65})
         }
 
     },
@@ -137,8 +137,12 @@ def devices_set_state(s):
             print capabilitie["state"]["value"]
             query_item = query_item[0]
             if capabilitie["state"]["value"] != query_item["custom_data"][capabilitie["type"]]["state"]["value"]:
-                functions[capabilitie["type"]][item["id"]][capabilitie["state"]["instance"]](capabilitie["state"]["value"])
-                query_item["custom_data"][capabilitie["type"]]["state"]["value"] = capabilitie["state"]["value"]
+                print capabilitie["state"]["instance"]
+                functions[capabilitie["type"]][capabilitie["state"]["instance"]][item["id"]](capabilitie["state"]["value"])
+                set_value = capabilitie["state"]["value"]
+                if capabilitie["state"]["instance"] == "temperature_k":
+                    set_value = {'h':0, 's':0, 'v':set_value / 65 }
+                query_item["custom_data"][capabilitie["type"]]["state"]["value"] = set_value
                 db.update(query_item, Devices.id == item["id"])
                 capabilitie_result["state"]["action_result"] = {"status": "DONE"}
             else:

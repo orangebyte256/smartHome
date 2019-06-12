@@ -33,10 +33,8 @@ def set_bulb(bulb, state):
         bulb.turn_off()
 
 def set_led_color(path, state, range=255):
-    print state
-    color = list(colorsys.hsv_to_rgb(state["h"] / 360.0, state["s"] / 100.0, state["v"] / 100.0))
-    color = map(lambda x : int(x*range), color)
-    print color
+    color = list(colorsys.hsv_to_rgb(state["h"] / 360.0, state["s"] / 100.0, (range / 255.0) * (state["v"] / 100.0)))
+    color = map(lambda x : int(x*255), color)
     send(color, path)
 
 def set_bulb_color(bulb, state):
@@ -47,6 +45,7 @@ def set_bulb_range(bulb, state, range):
     bulb.set_brightness(range)
 
 def set_led_range(path, state, range):
+    print state
     set_led_color(path, state, range)
 
 def cleaner_command(ip, token, dir, command):
