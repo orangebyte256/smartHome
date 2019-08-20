@@ -29,7 +29,6 @@ random.seed()
 equalize_thread = {}
 capture_thread = {}
 bluetooth_sock = {}
-bulb = Bulb(BULB_IP)
 
 db = TinyDB('./db.json')
 Devices = Query()
@@ -37,8 +36,7 @@ Devices = Query()
 JALOUSIE = '1'
 SWITCH = '2'
 LED = '3'
-BULB = '4'
-SENSOR_TEMPERATURE = '5'
+SENSOR_TEMPERATURE = '4'
 
 functions = {
     'devices.capabilities.on_off': 
@@ -47,27 +45,23 @@ functions = {
             SWITCH : lambda state : set_switch(SWITCH_IP, SWITCH_ID, SWITCH_KEY, state), 
             JALOUSIE : lambda state : set_jalousie(JALOUSIE_LINK, state),
             LED : lambda state : set_led(LED_LINK, state, 
-                db.search(Devices.id == LED)[0]["custom_data"]["devices.capabilities.color_setting"]["state"]["value"]),
-            BULB : lambda state : set_bulb(bulb, state)
+                db.search(Devices.id == LED)[0]["custom_data"]["devices.capabilities.color_setting"]["state"]["value"])
         }
     },
     'devices.capabilities.color_setting': 
     {
         "hsv": {
-            LED : lambda state : set_led_color(LED_LINK, state),
-            BULB : lambda state : set_bulb_color(bulb, state)
+            LED : lambda state : set_led_color(LED_LINK, state)
         },
         "temperature_k": {
-            LED : lambda state : set_led_color(LED_LINK, {'h':0, 's':0, 'v':state / 65 }),
-            BULB : lambda state : set_bulb_color(bulb, {'h':0, 's':0, 'v':state / 65})
+            LED : lambda state : set_led_color(LED_LINK, {'h':0, 's':0, 'v':state / 65 })
         }
 
     },
     'devices.capabilities.range': 
     {
         "brightness": {
-            LED : lambda range : set_led_range(LED_LINK, db.search(Devices.id == LED)[0]["custom_data"]["devices.capabilities.color_setting"]["state"]["value"], range),
-            BULB : lambda range : set_bulb_range(bulb, None, range)
+            LED : lambda range : set_led_range(LED_LINK, db.search(Devices.id == LED)[0]["custom_data"]["devices.capabilities.color_setting"]["state"]["value"], range)
         },
         "temperature": {
             SENSOR_TEMPERATURE: lambda range : {}
@@ -135,16 +129,13 @@ def devices_set_state(s):
         items = data["devices"]
     for item in items:
         query_item = db.search(Devices.id == item["id"])
+        query_item = query_item[0]
         device = {}
         device["id"] = item["id"]
         device["capabilities"] = []
         for capabilitie in item["capabilities"]:
             capabilitie_result = capabilitie
-            print capabilitie
-            print capabilitie["state"]["value"]
-            query_item = query_item[0]
             if capabilitie["state"]["value"] != query_item["custom_data"][capabilitie["type"]]["state"]["value"]:
-                print capabilitie["state"]["instance"]
                 functions[capabilitie["type"]][capabilitie["state"]["instance"]][item["id"]](capabilitie["state"]["value"])
                 set_value = capabilitie["state"]["value"]
                 if capabilitie["state"]["instance"] == "temperature_k":
@@ -183,8 +174,6 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                 db.insert({'id': SWITCH, 'name': 'switch', 'room': 'living_room', 'type': 'devices.types.switch', 'capabilities': [{"type": "devices.capabilities.on_off"}], 'custom_data': {'devices.capabilities.on_off': {'state': {"instance": "on", "value": True}}}})
             if item_not_exist(LED):
                 db.insert({'id': LED, 'name': 'led', 'room': 'living_room', 'type': 'devices.types.light', 'capabilities': [{"type": "devices.capabilities.on_off"}, {"type": "devices.capabilities.color_setting", "parameters": { "color_model": "hsv", "temperature_k": {"min": 2700, "max": 9000, "precision": 1}}}, {"type": "devices.capabilities.range", "parameters": { "instance": "brightness", "unit": "unit.percent", "range": {"min": 0, "max": 100, "precision": 10}}}], 'custom_data': {'devices.capabilities.on_off': {'state': {"instance": "on", "value": True}}, 'devices.capabilities.color_setting': {'state': {"instance": "hsv","value": {"h": 0,"s": 0,"v": 0}}}, 'devices.capabilities.range': {'state': {"instance": "brightness","value": 0}}}})                
-            if item_not_exist(BULB):
-                db.insert({'id': BULB, 'name': 'bulb', 'room': 'living_room', 'type': 'devices.types.light', 'capabilities': [{"type": "devices.capabilities.on_off"}, {"type": "devices.capabilities.color_setting", "parameters": { "color_model": "hsv", "temperature_k": {"min": 2700, "max": 9000, "precision": 1}}}, {"type": "devices.capabilities.range", "parameters": { "instance": "brightness", "unit": "unit.percent", "range": {"min": 0, "max": 100, "precision": 10}}}], 'custom_data': {'devices.capabilities.on_off': {'state': {"instance": "on", "value": True}}, 'devices.capabilities.color_setting': {'state': {"instance": "hsv","value": {"h": 0,"s": 0,"v": 0}}}, 'devices.capabilities.range': {'state': {"instance": "brightness","value": 0}}}})                
             if item_not_exist(SENSOR_TEMPERATURE):
                 db.insert({'id': SENSOR_TEMPERATURE, 'name': 'temperature', 'room': 'living_room', 'type': 'devices.types.thermostat', 'capabilities': [{"type": "devices.capabilities.range", "retrievable":True, "parameters": { "instance": "temperature", "unit": "unit.temperature.celsius", "range": {"min": 0, "max": 100, "precision": 1}}}], 'custom_data': {'devices.capabilities.range': {'state': {"instance": "temperature","value": 20}}}})                
             send_ok(s)

@@ -1,14 +1,10 @@
 HOST_NAME = '192.168.100.11' # !!!REMEMBER TO CHANGE THIS!!!
 PORT_NUMBER = 8000 # Maybe set this to 9000.
-JALOUSIE_LINK = 'http://192.168.100.3/'
+JALOUSIE_LINK = 'http://192.168.100.7/'
 SENSORS_LINK = 'http://192.168.100.6/'
 LED_LINK = 'http://192.168.100.6/'
-MIROBO_DIR = "/usr/local/bin/mirobo"
-MIROBO_IP = u"192.168.100.10"
-MIROBO_TOKEN = u"44655143634549325949375847366841"
 SWITCH_BIN = "/home/pi/source/smartHome/switch/index.js"
-BULB_IP = '192.168.100.9'
-CERT_PATH = "/home/pi/source/smartHome/server.pem"
+CERT_PATH = "/home/pi/source/smartHome/cert.pem"
 SWITCH_IP = '192.168.100.2'
 SWITCH_ID = '002005075ccf7fda8518'
 SWITCH_KEY = 'ae9296defbabcc83'
