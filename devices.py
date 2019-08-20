@@ -34,7 +34,7 @@ def set_bulb(bulb, state):
 
 def set_led_color(path, state, range=255):
     color = list(colorsys.hsv_to_rgb(state["h"] / 360.0, state["s"] / 100.0, (range / 255.0) * (state["v"] / 100.0)))
-    color = map(lambda x : int(x*255), color)
+    color = map(lambda x : int((x*x)*255), color)
     send(color, path)
 
 def set_bulb_color(bulb, state):
