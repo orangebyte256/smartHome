@@ -134,6 +134,9 @@ def devices_set_state(s):
         device["id"] = item["id"]
         device["capabilities"] = []
         for capabilitie in item["capabilities"]:
+            forward_end = False
+            if capabilitie["type"] == "devices.capabilities.on_off" and capabilitie["state"]["value"] == False:
+                forward_end = True
             capabilitie_result = capabilitie
             if capabilitie["state"]["value"] != query_item["custom_data"][capabilitie["type"]]["state"]["value"]:
                 functions[capabilitie["type"]][capabilitie["state"]["instance"]][item["id"]](capabilitie["state"]["value"])
@@ -144,10 +147,11 @@ def devices_set_state(s):
                 db.update(query_item, Devices.id == item["id"])
                 capabilitie_result["state"]["action_result"] = {"status": "DONE"}
             else:
-                print "error"
                 capabilitie_result["state"]["action_result"] = {"status": "ERROR", "error_code": "INVALID_ACTION", "error_message": "Value the same"}
             capabilitie_result["state"].pop("value")
             device["capabilities"].append(capabilitie_result)
+            if forward_end:
+                break
         result.append(device)
     answer(s, result, data)
 
