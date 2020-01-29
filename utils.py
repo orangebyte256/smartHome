@@ -7,6 +7,16 @@ from led import send
 from time import sleep
 from num2words import num2words
 import colorsys
+import os
+
+def get_device_ip(mac):
+    devices = os.popen('arp-scan  192.168.100.0/24').read().splitlines()
+    devices = devices[2:][:-3]
+    for i, line in enumerate(devices, start=1):
+        info = line.split('\t')
+        if info[1] == mac:
+            return info[0]
+
 
 def set_switch(ip, id, key, state):
     d = pytuya.OutletDevice(id, ip, key)
