@@ -44,7 +44,7 @@ def set_bulb(bulb, state):
 
 def set_led_color(path, state, range=255):
     color = list(colorsys.hsv_to_rgb(state["h"] / 360.0, state["s"] / 100.0, (range / 255.0) * (state["v"] / 100.0)))
-    color = map(lambda x : int(x*255), color)
+    color = map(lambda x : int((x*x)*255), color)
     send(color, path)
 
 def set_bulb_color(bulb, state):
@@ -66,11 +66,19 @@ def cleaner_command(ip, token, dir, command):
     my_env["LANG"] = "C.UTF-8"
     subprocess.Popen([dir, command], env=my_env)
 
+def read_temperature(SENSORS_LINK):
+  vals = urllib2.urlopen(SENSORS_LINK + "sensors").read()
+  vals = vals.split('.')
+  if len(vals) == 1:
+    return -1
+  return vals[0]
+
 def get_sensors(SENSORS_LINK):
   vals = urllib2.urlopen(SENSORS_LINK + "sensors").read()
   vals = vals.split('/')
   res = []
   for val in vals:
     val = val.split('.')
-    res.append(num2words(val[0], lang='ru'))
+    res.append(val[0])
+#    res.append(num2words(val[0], lang='ru'))
   return res
