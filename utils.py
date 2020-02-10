@@ -22,6 +22,11 @@ def set_switch(ip, id, key, state):
         sleep(0.5)
         d.set_status(state)
 
+def set_engine(slnet):
+    opener = urllib2.build_opener()
+    opener.addheaders.append('Cookie', 'slnet=' + slnet)
+    opener.open("https://developer.starline.ru/json/v1/device/356850085660536/set_param", {"type":"gign" "ign" : 1})
+
 def set_jalousie(path, state):
     if state:
         urllib2.urlopen(path + "open").read()

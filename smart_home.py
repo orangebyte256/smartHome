@@ -44,12 +44,14 @@ JALOUSIE = '1'
 SWITCH = '2'
 LED = '3'
 SENSOR_TEMPERATURE = '4'
+VEHICLE_ENGINE = '5'
 
 functions = {
     'devices.capabilities.on_off': 
     {
         "on" : {
             SWITCH : lambda state : set_switch(SWITCH_IP, SWITCH_ID, SWITCH_KEY, state), 
+            VEHICLE_ENGINE : lambda state : set_engine(SLNET),
             JALOUSIE : lambda state : set_jalousie(JALOUSIE_LINK, state),
             LED : lambda state : set_led(LED_LINK, state, 
                 db.search(Devices.id == LED)[0]["custom_data"]["devices.capabilities.color_setting"]["state"]["value"])
@@ -183,6 +185,8 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                 db.insert({'id': JALOUSIE, 'name': 'jalousie', 'room': 'living_room', 'type': 'devices.types.switch', 'capabilities': [{"type": "devices.capabilities.on_off"}], 'custom_data': {'devices.capabilities.on_off': {'state': {"instance": "on", "value": True}}}})
             if item_not_exist(SWITCH):
                 db.insert({'id': SWITCH, 'name': 'switch', 'room': 'living_room', 'type': 'devices.types.switch', 'capabilities': [{"type": "devices.capabilities.on_off"}], 'custom_data': {'devices.capabilities.on_off': {'state': {"instance": "on", "value": True}}}})
+            if item_not_exist(VEHICLE_ENGINE):
+                db.insert({'id': VEHICLE_ENGINE, 'name': 'vehicle_engine', 'room': 'living_room', 'type': 'devices.types.switch', 'capabilities': [{"type": "devices.capabilities.on_off"}], 'custom_data': {'devices.capabilities.on_off': {'state': {"instance": "on", "value": False}}}})
             if item_not_exist(LED):
                 db.insert({'id': LED, 'name': 'led', 'room': 'living_room', 'type': 'devices.types.light', 'capabilities': [{"type": "devices.capabilities.on_off"}, {"type": "devices.capabilities.color_setting", "parameters": { "color_model": "hsv", "temperature_k": {"min": 2700, "max": 9000, "precision": 1}}}, {"type": "devices.capabilities.range", "parameters": { "instance": "brightness", "unit": "unit.percent", "range": {"min": 0, "max": 100, "precision": 10}}}], 'custom_data': {'devices.capabilities.on_off': {'state': {"instance": "on", "value": True}}, 'devices.capabilities.color_setting': {'state': {"instance": "hsv","value": {"h": 0,"s": 0,"v": 0}}}, 'devices.capabilities.range': {'state': {"instance": "brightness","value": 0}}}})                
             if item_not_exist(SENSOR_TEMPERATURE):
