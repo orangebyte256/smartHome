@@ -1,7 +1,6 @@
 import pytuya
 import subprocess, os
 import time
-import bluetooth
 import urllib2
 from led import send
 from time import sleep
@@ -10,10 +9,9 @@ import colorsys
 import os
 
 def get_device_ip(mac):
-    devices = os.popen('arp-scan  192.168.100.0/24').read().splitlines()
-    devices = devices[2:][:-3]
-    for i, line in enumerate(devices, start=1):
-        info = line.split('\t')
+    devices = os.popen('arp-scan --localnet').read().splitlines()
+    for i, line in enumerate(devices, start=0):
+        info = line.split()
         if info[1] == mac:
             return info[0]
 

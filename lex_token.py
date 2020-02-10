@@ -16,8 +16,6 @@ import subprocess
 import subprocess, os
 import urllib2
 from pathlib import Path
-import bluetooth
-from google_images_download import google_images_download   #importing the library
 from multiprocessing import Process
 
 def token_exist(elements, value):

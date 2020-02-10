@@ -20,7 +20,6 @@ from lex_token import *
 from led import * 
 from utils import * 
 from num2words import num2words
-from yeelight import Bulb
 from tinydb import TinyDB, Query
 from urlparse import urlparse
 
@@ -28,9 +27,10 @@ random.seed()
 
 JALOUSIE_LINK = "http://" + get_device_ip(JALOUSIE_MAC) + '/'
 LED_LINK = "http://" + get_device_ip(LED_MAC) + '/'
+SENSORS_LINK = "http://" + get_device_ip(LED_MAC) + '/'
 MIROBO_LINK = "http://" + get_device_ip(MIROBO_MAC) + '/'
-BULB_LINK = get_device_ip(BULB_MAC)
-SWITCH_LINK = get_device_ip(SWITCH_MAC)
+BULB_IP = get_device_ip(BULB_MAC)
+SWITCH_IP = get_device_ip(SWITCH_MAC)
 
 
 equalize_thread = {}
