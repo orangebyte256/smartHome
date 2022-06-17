@@ -31,7 +31,7 @@ microdotphat==0.2.1
 mote==0.0.4
 motephat==0.0.2
 num2words==0.5.9
-numpy==1.12.1
+numpy==1.21.0
 oauthlib==2.0.1
 pantilthat==0.0.7
 pathlib==1.0.1
